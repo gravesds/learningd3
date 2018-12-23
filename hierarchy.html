@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <svg class="chart" height=600 width=600><g transform="translate(20,20)"></g></svg>
+    </body>
+    <script>
+        var data = {
+                    "name": "A1",
+                    "children": [
+                        {
+                        "name": "B1",
+                        "children": [
+                            {
+                            "name": "C1",
+                            "value": 100
+                            },
+                            {
+                            "name": "C2",
+                            "value": 300
+                            },
+                            {
+                            "name": "C3",
+                            "value": 200
+                            }
+                        ]
+                        },
+                        {
+                        "name": "B2",
+                        "value": 200
+                        }
+                    ]
+                    };
+        var root = d3.hierarchy(data);
+        var treelayout = d3.tree();
+        treelayout.size([400,400]);
+        //treelayout(root);
+
+        function update(treeroot) {
+            treelayout(treeroot);
+
+            // update section
+            var pointselection = d3.select("g")
+                        .selectAll("circle.node").data(treeroot.descendants())
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y)
+                        .attr("r",5)
+                        //.on("click", function(e,i) { console.log(e); });
+
+            var lineselection = d3.select("g")
+                        .selectAll("line.link").data(treeroot.links())
+                        .attr("stroke", "#ccc")
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
+
+            // enter section
+            pointselection.enter().append("circle")
+                        .classed("node",true)
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y)
+                        .attr("r",5)
+                        //.on("click", function(e,i) { 
+                          //          console.log(e.children); 
+                            //        update(e.children) });
+
+            lineselection.enter().append("line")
+                        .classed("link",true)
+                        .attr("stroke", "#ccc")
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
+
+            // exit section
+            pointselection.exit().remove();
+            lineselection.exit().remove();
+
+        }
+
+        update(root);
+
+    </script>
+</html>

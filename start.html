@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Base point</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <style></style>
+        <svg class="chart"></svg>
+        <script>
+            d3.csv("http://localhost:8000/iris.csv", function (data) {
+                return {
+                    sepal_length: +data.sepal_length,
+                    sepal_width: +data.sepal_width,
+                    petal_length: +data.petal_length,
+                    petal_width: +data.petal_width,
+                    species: data.species
+                };
+            })
+            .then( function (data) {
+                console.log("success");
+                console.log("max sepal length " + d3.max(data,d => d.sepal_length));
+                console.log("mean sepal length " + d3.mean(data, d => d.sepal_length));
+                console.log("min sepal length " + d3.min(data, d => d.sepal_length));
+                console.log("median sepal length " + d3.median(data, d => d.sepal_length));
+                console.log("sum of all the elements" + d3.sum(data, d => d.sepal_length));
+                console.log(d3.quantile(data, 0, d => d.sepal_length));
+                console.log(d3.quantile(data, 0.25, d => d.sepal_length));
+                console.log(d3.quantile(data, 0.5, d => d.sepal_length));
+                console.log(d3.quantile(data, 0.75, d => d.sepal_length));
+                console.log(d3.quantile(data, 1.0, d => d.sepal_length));
+                console.log(d3.variance(data, d => d.sepal_length));
+                console.log(d3.deviation(data, d => d.sepal_length));
+                console.log(d3.extent(data,d=> d.sepal_length));
+                var specgroup = d3.nest()
+                    .key( d => d.species)
+                    .entries(data);
+                console.log(specgroup);
+
+            })
+            .catch( function (err) {
+                console.log(err);
+            });
+        </script>
+    </body>
+</html>

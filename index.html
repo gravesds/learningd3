@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Learing D3</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <style>
+            body {
+                font: 11px sans-serif;
+            }
+
+            .tooltip {
+                position: absolute;
+                width: 200px;
+                height: 28px;
+                pointer-events: none;
+            }
+            .label {
+                color: steelblue;
+            }
+            .axis text {
+                font: 10px sans-serif;
+                fill: black;
+            }
+        </style>
+        <svg class="chart"></svg>
+        <script>
+            var svgHeight = 600;
+            var svgWidth = 960;
+
+            var margin = {
+                top:    20,
+                right:  20,
+                bottom: 30,
+                left:   40
+                },
+                height = svgHeight - margin.top - margin.bottom,
+                width = svgWidth - margin.left - margin.right;
+
+            var xValue = function(d) { return d.sepal_width; },
+                xScale = d3.scaleLinear().range([0,width]),
+                xMap = function(d) { return xScale(xValue(d)); };
+
+            var yValue = function(d) { return d.sepal_length; },
+                yScale = d3.scaleLinear().range([0,height]),
+                yMap = function(d) { return yScale(yValue(d)); };
+
+            var cValue = function(d) { return d.species; },
+                color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            var chart = d3.select(".chart")
+                        .attr("width",svgWidth)
+                        .attr("height",svgHeight)
+                        .append("g")
+                        .attr("transform","translate("+margin.left + "," + margin.top + ")");
+
+            d3.csv("http://localhost:8000/iris.csv", function (data){
+                return {
+                    sepal_width: +data.sepal_width,
+                    sepal_length: +data.sepal_length,
+                    petal_length: +data.petal_length,
+                    petal_width: +data.petal_width,
+                    species: data.species
+                };
+            }).then( function (data) {
+
+                // set the proper domain so the axes display right
+                xScale.domain([0,d3.max(data,xValue)]);
+                yScale.domain([d3.max(data,yValue),0]);  //remember to reverse the y axis
+                
+                // set up the axes
+                var xAxis = d3.axisBottom().scale(xScale).ticks(10);
+                var yAxis = d3.axisLeft().scale(yScale).ticks(10);
+
+                // add the X axis
+                chart.append("g")
+                    .attr("class","x axis")
+                    .attr("transform","translate(0," + height + ")")
+                    .call(xAxis)
+                    .append("text")
+                        .attr("class","label")
+                        .attr("x", width)
+                        .attr("y",-6)
+                        .attr("text-anchor","end")
+                        .text("Sepal Width");
+                
+                // add the y axis
+                chart.append("g")
+                    .attr("class","y axis")
+                    .call(yAxis)
+                    .append("text")
+                        .attr("class", "label")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .attr("color","red")
+                        .style("text-anchor", "end")
+                        .text("Sepal Length");
+
+                // add all the data points
+                chart.append("g").attr("class","x axis");
+                chart.selectAll(".dot")
+                    .data(data).enter().append("circle").attr("class","dot")
+                    .attr("r",4)
+                    .attr("cx",xMap)
+                    .attr("cy",yMap)
+                    .attr("fill", data => color(cValue(data)))
+                    .attr("arb",function(data) {return data.species;});
+            }); 
+
+            
+            
+        </script>
+    </body>
+</html>

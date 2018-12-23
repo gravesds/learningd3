@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <title>iris 2</title>
+            <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <style>
+        .label {
+            fill: steelblue;
+        }
+        </style>
+        <svg class="chart"></svg>
+        <script>
+            var margin = {top: 20, right: 20, bottom: 40, left: 40};
+            var svgWidth = 960, svgHeight = 600;
+            var width = svgWidth - margin.left - margin.right;
+            var height = svgHeight - margin.top - margin.bottom;
+
+            var xScale = d3.scaleLinear().range([0,width]),
+                xValue = function (data) { return data.petal_width;},
+                xMap = function(data) { return xScale(xValue(data));};
+
+            var yScale = d3.scaleLinear().range([height,0]),
+                yValue = function(data) { return data.petal_length;},
+                yMap = function(data) { return yScale(yValue(data));};
+
+            var cValue = function(data) { return data.species; };
+            var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            
+
+            var xAxis = d3.axisBottom().scale(xScale).ticks(10);
+            var yAxis = d3.axisLeft().scale(yScale).ticks(10);
+
+            var chart = d3.select(".chart")
+                            .attr("width",svgWidth)
+                            .attr("height",svgHeight).append("g")
+                                .attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+            d3.csv("http://localhost:8000/iris.csv", function(data, i) { 
+                        return {
+                            sepal_length:   +data.sepal_length,
+                            sepal_width:    +data.sepal_width,
+                            petal_length:   +data.petal_length,
+                            petal_width:    +data.petal_width,
+                            species:        data.species,
+                            row:            +i
+                        } 
+                    })
+                    .then( function (data,i) { 
+                        xScale.domain([0,d3.max(data,xValue)]);
+                        yScale.domain([0,d3.max(data,yValue)]);
+
+                        chart.append("g")
+                            .attr("class","x axis")
+                            .attr("transform","translate(0," + height + ")")
+                            .call(xAxis).append("text")
+                                .attr("class","label")
+                                .attr("text-anchor","end")
+                                .attr("transform","translate(" + width + ",-6)")
+                                .text("petal width");
+
+                        chart.append("g")
+                            .attr("class","y axis")
+                            .call(yAxis).append("text")
+                                .attr("class","label")
+                                .attr("transform","rotate(-90)")
+                                .attr("dy",".71em")
+                                .attr("y",6)
+                                .text("Petal Length");
+
+                        chart.selectAll(".dot")
+                            .data(data).enter().append("circle")
+                                .attr("class","dot")
+                                .attr("cx",xMap)
+                                .attr("cy",yMap)
+                                .attr("r",4)
+                                .attr("arb", data => data.row)
+                                //.attr("fill", function(data) { return color(cValue(data));});
+                                .attr("fill", data => color(cValue(data)));
+                        console.log("success");
+                    })
+                    .catch( function (data) { 
+                        console.log("failure");
+                    });
+        
+        
+        </script>
+    </body>
+</html>

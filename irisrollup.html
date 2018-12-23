@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rollup</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <style>
+        </style>
+        <svg class="chart"></svg>
+        <script>
+            var svgHeight = 600,
+                svgWidth = 960,
+                margin = {top: 20, right: 20, bottom: 40, left: 40}
+                height = svgHeight - margin.top - margin.bottom
+                width = svgWidth - margin.left - margin.right;
+
+            // x axis
+            var xScale = d3.scaleBand().rangeRound([0,width]).padding(0.1);
+            var xAxis = d3.axisBottom().scale(xScale).ticks(3);
+
+            // y axis
+            var yValue = function(data) { return data.value; };
+            var yScale = d3.scaleLinear().range([height,0]);
+            var yAxis = d3.axisLeft().scale(yScale).ticks(10);
+
+            // set up the color mapping
+            var cValue = function(data) { return data.key; },
+                color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            var chart = d3.select(".chart")
+                            .attr("height",svgHeight)
+                            .attr("width",svgWidth)
+                            .append("g")
+                                .attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+            d3.csv("http://localhost:8000/iris.csv", function(data,v) { 
+                return {species: data.species, petal_length: +data.petal_length};
+                })
+                .then(function (data) { 
+                    var speciesPetalLength = d3.nest()
+                                    .key(d => d.species)
+                                    .rollup( v=> d3.mean(v, d=> d.petal_length))
+                                    .entries(data);
+                    xScale.domain(speciesPetalLength.map(function(d){ return d.key;}));
+                    yScale.domain([0,d3.max(speciesPetalLength,yValue)]);
+
+                    console.log("success");
+                    console.log(JSON.stringify(speciesPetalLength));
+                    //console.log(speciesEntryCount.find(obj => obj.key == "setosa").value);
+                    chart.append("g")
+                        .attr("class","x axis")
+                        .attr("transform","translate(0," + height + ")")
+                        .call(xAxis);
+
+                    chart.append("g")
+                        .attr("class","y axis")
+                        .call(yAxis);
+                    chart.selectAll(".bar")
+                        .data(speciesPetalLength).enter().append("rect")
+                            .attr("class","bar")
+                            .attr("x",function (d) { return xScale(d.key);})
+                            .attr("y",function(d) { return yScale(d.value);})
+                            .attr("width",xScale.bandwidth())
+                            .attr("height",function(d) { return height - yScale(d.value);})
+                            .attr("fill", data => color(cValue(data)))
+                            .attr("arb",yValue);
+                })
+                .catch(function (data) { 
+                    console.log("failure"); 
+                });
+        </script>
+    </body>
+</html>

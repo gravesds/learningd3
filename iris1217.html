@@ -1,0 +1,73 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>iris 1217</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <svg class = "chart"></svg>
+    <script>
+        var svgHeight = 600, svgWidth = 960;
+        var margin = {top: 20, right: 20, bottom: 40, left: 40};
+        var height = svgHeight - margin.top - margin.bottom;
+        var width = svgWidth - margin.left - margin.right;
+
+        var chart = d3.select(".chart")
+                        .attr("width",svgWidth)
+                        .attr("height",svgHeight)
+                        .append("g")
+                            .attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+        var xValue = data => data.petal_width;
+        var xScale = d3.scaleLinear().range([0,width]);
+        var xMap = data => xScale(xValue(data));
+        var xAxis = d3.axisBottom().scale(xScale).ticks(10);
+
+        var yValue = data => data.petal_length;
+        var yScale = d3.scaleLinear().range([height,0]);
+        var yMap = data => yScale(yValue(data));
+        var yAxis = d3.axisLeft().scale(yScale).ticks(10);
+
+        var cValue = data => data.species;
+        var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+
+        d3.csv("http://localhost:8000/iris.csv", function (data, i) {
+            return {    species:  data.species,
+                        sepal_length:   +data.sepal_length,
+                        sepal_width:    +data.sepal_width,
+                        petal_length:   +data.petal_length,
+                        petal_width:    +data.petal_width,
+                        row:            data.i
+            };
+        })
+        .then( function (data) { 
+            console.log("success");
+
+            xScale.domain([0,d3.max(data, xValue)]);
+            yScale.domain([0,d3.max(data, yValue)]);
+
+            chart.append("g")
+                .attr("class","x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            chart.append("g")
+                .attr("class","y axis")
+                .call(yAxis);
+
+            chart.selectAll(".dot")
+                .data(data).enter().append("circle")
+                    .attr("cx", xMap)
+                    .attr("cy", yMap)
+                    .attr("fill", data => color(cValue(data)))
+                    .attr("r", 4); 
+        })
+        .catch( function (err) { 
+            console.log(err); 
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Line 1</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+
+        <style type="text/css">
+            .line {
+                fill: none;
+                stroke: #ffab00;
+                stroke-width: 3;
+            }
+
+            circle {
+                transition: 0.2s;
+            }
+            
+            .dot {
+                fill: #ffab00;
+                stroke: #fff;
+                r: 5;
+            }
+            
+            .focus {
+                fill: #ffab00;
+                stroke: white;
+                r: 7;
+            }
+
+        </style>
+
+        <script>
+            var svgHeight = 600, svgWidth = 960,
+                margin = {top: 20, right: 20, bottom: 40, left: 40},
+                height = svgHeight - margin.top - margin.bottom,
+                width = svgWidth - margin.left - margin.right;
+
+            var n = 21;
+
+            var xScale = d3.scaleLinear()
+                            .domain([0,n-1])
+                            .range([0,width]);
+
+            var yScale = d3.scaleLinear()
+                            .domain([0,1])
+                            .range([height,0]);
+
+            var line = d3.line()
+                            .x( (d, i) => xScale(i) )
+                            .y( (d) => yScale(d.y) )
+                            .curve(d3.curveMonotoneX);
+
+            var dataset = d3.range(n).map( function (d) { return { "y": d3.randomUniform(1)()}; });
+
+            var svg = d3.select("body").append("svg")
+                            .attr("height", svgHeight)
+                            .attr("width", svgWidth)
+                            .append("g")
+                                .attr("transform","translate(" + margin.left + "," + margin.top + ")");
+
+            svg.append("g")
+                .attr("class","x axis")
+                .attr("transform","translate(0," + height + ")")
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(yScale));
+
+            svg.append("path")
+                .datum(dataset)
+                .attr("class","line")
+                .attr("d", line);
+
+            svg.selectAll(".dot")
+                .data(dataset).enter().append("circle")
+                .attr("class","dot")
+                .attr("cx", (d,i) => xScale(i) )
+                .attr("cy", d => yScale(d.y) )
+                .attr("r",5)
+                .on("mouseover", function(d,i) {
+                    console.log(d);
+                    this.classList.add("focus");
+                    this.classList.remove("dot");
+                })
+                .on("mouseout", function () { 
+                    this.classList.add("dot");
+                    this.classList.remove("focus");
+                })
+        </script>
+    </body>
+</html>

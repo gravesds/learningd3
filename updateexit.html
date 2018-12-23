@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <body>
+        <style>
+        .bar {
+            float: left;
+            width: 30px;
+            margin-right: 20px;
+            background-color: #F4F5F7;
+            border: 1px solid #C5C5C5;
+}       </style>
+        <div id="chart">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+    </body>
+    <script>
+        var numbers = [15,8,42,4,32];
+
+        function update() {
+            // update section
+            var selection = d3.select("#chart").selectAll(".bar").data(numbers)
+                            .style("height", (data) => (data + "px"))
+                            .style("margin-top", (data) => (100 - data + "px"))
+                            .on("click", function (e,i) { numbers.splice(i,1); update(); console.log("deleted element");});
+
+            // enter section
+            selection.enter().append("div").attr("class","bar")
+                            .style("height", (data) => (data + "px"))
+                            .style("margin-top", (data) => (100 - data + "px"))
+                            .on("click", function (e,i) { numbers.splice(i,1); update(); console.log("deleted element"); });
+
+            // exit section
+            selection.exit().remove();
+        }
+
+        update();
+
+    </script>
+</html>
